@@ -31,7 +31,7 @@ defmodule ExOauth2Provider.AccessTokens do
   def get_by_token(token, config \\ [], opts \\ []) do
     config
     |> Config.access_token()
-    |> Config.repo(config).get_by(token: token, opts)
+    |> Config.repo(config).get_by([token: token], opts)
   end
 
   @doc """
@@ -49,7 +49,7 @@ defmodule ExOauth2Provider.AccessTokens do
   def get_by_refresh_token(refresh_token, config \\ [], opts \\ []) do
     config
     |> Config.access_token()
-    |> Config.repo(config).get_by(refresh_token: refresh_token, opts)
+    |> Config.repo(config).get_by([refresh_token: refresh_token], opts)
   end
 
   @doc """
@@ -67,7 +67,7 @@ defmodule ExOauth2Provider.AccessTokens do
   def get_by_refresh_token_for(application, refresh_token, config \\ [], opts \\ []) do
     config
     |> Config.access_token()
-    |> Config.repo(config).get_by(application_id: application.id, refresh_token: refresh_token, opts)
+    |> Config.repo(config).get_by([application_id: application.id, refresh_token: refresh_token], opts)
   end
 
   @doc """
@@ -246,9 +246,10 @@ defmodule ExOauth2Provider.AccessTokens do
       nil
   """
   @spec get_by_previous_refresh_token_for(AccessToken.t(), keyword(), keyword()) :: AccessToken.t() | nil
+  def get_by_previous_refresh_token_for(access_token, config, opts \\ [])
   def get_by_previous_refresh_token_for(%{previous_refresh_token: nil}, _config, _opts), do: nil
   def get_by_previous_refresh_token_for(%{previous_refresh_token: ""}, _config, _opts), do: nil
-  def get_by_previous_refresh_token_for(%{previous_refresh_token: previous_refresh_token, resource_owner_id: resource_owner_id, application_id: application_id}, config, opts \\ []) do
+  def get_by_previous_refresh_token_for(%{previous_refresh_token: previous_refresh_token, resource_owner_id: resource_owner_id, application_id: application_id}, config, opts) do
     config
     |> Config.access_token()
     |> scope_belongs_to(:application_id, application_id)
@@ -285,12 +286,12 @@ defmodule ExOauth2Provider.AccessTokens do
   def revoke_previous_refresh_token(access_token, config \\ [], opts \\ [])
   def revoke_previous_refresh_token(%{previous_refresh_token: ""} = access_token, _config, _opts), do: {:ok, access_token}
   def revoke_previous_refresh_token(%{previous_refresh_token: nil} = access_token, _config, _opts), do: {:ok, access_token}
-  def revoke_previous_refresh_token(access_token, config, opts \\ []) do
+  def revoke_previous_refresh_token(access_token, config, opts) do
     access_token
-    |> get_by_previous_refresh_token_for(config)
+    |> get_by_previous_refresh_token_for(config, opts)
     |> revoke(config)
 
-    reset_previous_refresh_token(access_token, config)
+    reset_previous_refresh_token(access_token, config, opts)
   end
 
   defp reset_previous_refresh_token(access_token, config, opts \\ []) do
