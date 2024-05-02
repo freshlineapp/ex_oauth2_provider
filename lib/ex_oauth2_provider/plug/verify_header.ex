@@ -50,7 +50,7 @@ defmodule ExOauth2Provider.Plug.VerifyHeader do
 
     conn
     |> fetch_token(opts)
-    |> verify_token(conn, key, config)
+    |> verify_token(conn, key, config, opts)
   end
 
   defp fetch_token(conn, opts) do
@@ -72,10 +72,10 @@ defmodule ExOauth2Provider.Plug.VerifyHeader do
     end
   end
 
-  defp verify_token(nil, conn, _, _config), do: conn
-  defp verify_token("", conn, _, _config), do: conn
-  defp verify_token(token, conn, key, config) do
-    access_token = ExOauth2Provider.authenticate_token(token, config)
+  defp verify_token(nil, conn, _, _config, _opts), do: conn
+  defp verify_token("", conn, _, _config, _opts), do: conn
+  defp verify_token(token, conn, key, config, opts) do
+    access_token = ExOauth2Provider.authenticate_token(token, config, opts)
 
     Plug.set_current_access_token(conn, access_token, key)
   end
